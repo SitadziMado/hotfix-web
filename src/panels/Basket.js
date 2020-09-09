@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import accounting from 'accounting';
 
@@ -7,11 +7,20 @@ import Checkbox from './Checkbox';
 import edit from '../img/edit.svg';
 import './place.css';
 
+function usePersistedState(key, defaultValue) {
+	const [state, setState] = React.useState(
+	  () => JSON.parse(localStorage.getItem(key)) || defaultValue
+	);
+	useEffect(() => {
+	  localStorage.setItem(key, JSON.stringify(state));
+	}, [key, state]);
+	return [state, setState];
+}
 
 const Basket = ({ match: { params: { areaId, itemId }}, foodAreas, order }) => {
-  const [ faster, setFaster ] = useState(true);
-  const [ time, setTime ] = useState('');
-  const [ selfService, setSelfService ] = useState(false);
+  const [ faster, setFaster ] = usePersistedState('faster', true);
+  const [ time, setTime ] = usePersistedState('time', '');
+  const [ selfService, setSelfService ] = usePersistedState('selfService', false);
   const area = foodAreas.filter(area => area.id === areaId)[0];
   const item = area.items.filter(item => item.id === itemId)[0];
 
@@ -121,7 +130,7 @@ const Basket = ({ match: { params: { areaId, itemId }}, foodAreas, order }) => {
         </div>
         <div className="Place__choice-item">
           <span>Назначить</span>
-          <input type="date"
+          <input type="time"
             value={time}
             onFocus={() => {
               setFaster(false);
